@@ -232,7 +232,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@google/genai": "^1.10.0",
+    "@google/genai": "^1.41.0",
     "execa": "^9.6.1",
     "node-fetch": "^3.3.2",
     "openai": "^6.19.0",
