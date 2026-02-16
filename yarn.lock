@@ -679,10 +679,10 @@
   resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.7.0.tgz#64c441bdae033b378b6eef7d0c3d77c329b9378e"
   integrity sha512-k107IF4+Xr7UHjwDc7Cfd6PRQfbdkiRabXGRjo07b4WyPahFBZCZ1sE+BNxYIJPPg73UkfOsVOLwqVc/6ETrIA==
 
-"@types/vscode@^1.108.1":
-  version "1.108.1"
-  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.108.1.tgz#ed56b273acd865960cfea8d884e20433d9ed523b"
-  integrity sha512-DerV0BbSzt87TbrqmZ7lRDIYaMiqvP8tmJTzW2p49ZBVtGUnGAu2RGQd1Wv4XMzEVUpaHbsemVM5nfuQJj7H6w==
+"@types/vscode@^1.76.0":
+  version "1.109.0"
+  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.109.0.tgz#062dfddf5f7df9cf36038e900ae67421ae69091b"
+  integrity sha512-0Pf95rnwEIwDbmXGC08r0B4TQhAbsHQ5UyTIgVgoieDe4cOnf92usuR5dEczb6bTKEp7ziZH4TV1TRGPPCExtw==
 
 "@typescript-eslint/eslint-plugin@^5.56.0":
   version "5.62.0"
@@ -2624,10 +2624,10 @@ open@^10.1.0:
     is-inside-container "^1.0.0"
     wsl-utils "^0.1.0"
 
-openai@^6.19.0:
-  version "6.19.0"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-6.19.0.tgz#37138ac9f1feedd6414f099c46da04f3d54c07ec"
-  integrity sha512-5uGrF82Ql7TKgIWUnuxh+OyzYbPRPwYDSgGc05JowbXRFsOkuj0dJuCdPCTBZT4mcmp2NEvj/URwDzW+lYgmVw==
+openai@^6.22.0:
+  version "6.22.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-6.22.0.tgz#822abd533ba3656741df87e31d1d643520e77463"
+  integrity sha512-7Yvy17F33Bi9RutWbsaYt5hJEEJ/krRPOrwan+f9aCPuMat1WVsb2VNSII5W1EksKT6fF69TG/xj4XzodK3JZw==
 
 optionator@^0.9.3:
   version "0.9.4"
