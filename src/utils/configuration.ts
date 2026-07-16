@@ -60,16 +60,6 @@ export async function setConfigurationValue(
   await configuration.update(key, value, vscode.ConfigurationTarget.Global);
 }
 
-export function getLanguage(): string {
-  const parsed = configurationSchema.parse(readConfigurationSnapshot());
-  return parsed.general.language ?? "English";
-}
-
 export function getConfiguration() {
   return configurationSchema.parse(readConfigurationSnapshot());
-}
-
-export function getShowEmoji(): boolean {
-  const parsed = configurationSchema.parse(readConfigurationSnapshot());
-  return parsed.general.showEmoji ?? false;
 }

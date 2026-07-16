@@ -1,5 +1,14 @@
 # CHANGELOG
 
+### What Changed
+
+- Put Icons In Git SCM Bar
+
+### Fixed
+
+- Resolve Custom Generator Issue
+- Resolve Emoji and Extension Options
+
 ## 2.1.2 - 2026-02-10
 
 ### What Changed

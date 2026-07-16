@@ -133,7 +133,13 @@ export async function generateAiCommitCommand() {
       }
       case "Custom": {
         const { CustomMsgGenerator } = await import("@procommit/commit-msg-gen");
-        messageGenerator = new CustomMsgGenerator({ endpoint });
+        messageGenerator = new CustomMsgGenerator({
+          apiKey,
+          endpoint,
+          model: configuration.model,
+          temperature: configuration.temperature,
+          maxTokens: configuration.maxTokens,
+        });
         break;
       }
       case "ChatGPT":
