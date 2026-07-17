@@ -2,17 +2,20 @@
   "name": "pro-commit",
   "displayName": "ProCommit",
   "description": "📝 A Customizable VS Code extension for AI-generated commit messages.",
-  "version": "2.1.2",
-  "homepage": "https://prplmoe.me",
-  "bugs": "https://github.com/koiverse/ProCommit/issues",
+  "version": "2.2.2",
+  "homepage": "https://koiiverse.cloud",
+  "bugs": "https://github.com/rukamori/ProCommit/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/koiverse/ProCommit"
+    "url": "https://github.com/rukamori/ProCommit"
   },
   "license": "MIT",
   "engines": {
     "vscode": "^1.109.0"
   },
+  "enabledApiProposals": [
+    "contribSourceControlInputBoxMenu"
+  ],
   "publisher": "Kochan",
   "categories": [
     "Other",
@@ -112,11 +115,10 @@
       }
     ],
     "menus": {
-      "scm/title": [
+      "scm/inputBox": [
         {
           "command": "procommit.generateAICommit",
-          "when": "scmProvider == git",
-          "group": "navigation"
+          "when": "scmProvider == git"
         }
       ]
     },
@@ -225,7 +227,7 @@
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vscode/test-electron": "^2.4.1",
-    "@vscode/vsce": "^3.7.1",
+    "@vscode/vsce": "^3.9.2",
     "esbuild": "^0.24.2",
     "eslint": "^8.36.0",
     "glob": "^11.0.0",
