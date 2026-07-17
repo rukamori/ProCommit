@@ -27,6 +27,7 @@ export class GeminiMsgGenerator implements MsgGenerator {
     const config = getConfiguration();
     const language = config.general?.language || "English";
     const includeFileExtension = config.general?.includeFileExtension ?? true;
+    const showEmoji = config.general?.showEmoji ?? false;
     let instruction: string;
     switch (language) {
       case "Russian":
@@ -55,6 +56,6 @@ export class GeminiMsgGenerator implements MsgGenerator {
     if (!response || typeof response.text !== "string" || !response.text.trim()) {
       throw new Error("No valid commit message found in Gemini response.");
     }
-    return postProcessCommitMessage(response.text, { includeFileExtension, analysis });
+    return postProcessCommitMessage(response.text, { includeFileExtension, showEmoji, analysis });
   }
 }

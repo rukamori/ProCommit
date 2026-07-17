@@ -80,20 +80,6 @@ Ich sende Ihnen die Ausgabe des Befehls 'git diff --staged', und Sie wandeln die
 7. Fügen Sie keine Diff-Ausgabe, Dateianzahl, Erklärungen oder Codeblöcke hinzu. Verwenden Sie immer Typ und Scope und schreiben Sie auf Deutsch.
 `;
 
-export const emojiInstructions = `
-- feat: ✨
-- fix: 🐛
-- docs: 📚
-- style: 💎
-- refactor: 🔨
-- perf: 🚀
-- test: 🚨
-- chore: 🔧
-- build: 🏗️
-- ci: 👷
-- revert: ⏪
-`;
-
 export const englishAssistantInstruction = "<type>(<scope>): <subject>";
 
 export const russianAssistantInstruction = "<type>(<scope>): <субъект>";

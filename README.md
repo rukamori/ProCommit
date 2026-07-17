@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/koimoee/ProCommit/refs/heads/main/assets/images/icon.png" alt="ProCommit logo" width="88px" />
+  <img src="https://raw.githubusercontent.com/rukamori/ProCommit/refs/heads/main/assets/images/icon.png" alt="ProCommit logo" width="88px" />
   <h2 align="center">ProCommit</h2>
   <p align="center">A VS Code extension for generating clean, customizable commit messages with AI.</p>
   <p align="center">
-    <a href="https://github.com/koimoee/ProCommit/actions/workflows/build.yml">
-      <img alt="Build" src="https://img.shields.io/github/actions/workflow/status/koimoee/ProCommit/.github%2Fworkflows%2Fbuild.yml?style=flat-square" />
+    <a href="https://github.com/rukamori/ProCommit/actions/workflows/build.yml">
+      <img alt="Build" src="https://img.shields.io/github/actions/workflow/status/rukamori/ProCommit/.github%2Fworkflows%2Fbuild.yml?style=flat-square" />
     </a>
     <a href="https://marketplace.visualstudio.com/items?itemName=Kochan.pro-commit">
       <img alt="VS Marketplace" src="https://img.shields.io/visual-studio-marketplace/v/Kochan.pro-commit?style=flat-square" />
@@ -53,7 +53,7 @@
 
 ## Install (Manually)
 
-1. Download a VSIX from the [Direct Link](https://nightly.link/koimoee/ProCommit/workflows/build/main/ProCommit.vsix.zip).
+1. Download a VSIX from the [Direct Link](https://nightly.link/rukamori/ProCommit/workflows/build/main/ProCommit.vsix.zip).
 2. In VS Code, open Extensions → `...` → Install from VSIX…
 3. Select the downloaded VSIX file.
 
@@ -116,8 +116,8 @@ Available in the Command Palette:
 
 ## License
 
-Released under the [MIT License](/LICENSE) by [@Kochan/koiisan](https://github.com/koimoee).
+Released under the [MIT License](/LICENSE) by [@rukamori](https://github.com/rukamori).
 
 ## Contributing
 
-Feature requests and new language support are welcome. Please open an issue on the [GitHub repository](https://github.com/koimoee/ProCommit/issues).
+Feature requests and new language support are welcome. Please open an issue on the [GitHub repository](https://github.com/rukamori/ProCommit/issues).

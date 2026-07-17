@@ -200,31 +200,54 @@ export function createDiffAwareUserPrompt(diff: string): { userPrompt: string; a
 
 export function postProcessCommitMessage(
   raw: string,
-  params: { includeFileExtension: boolean; analysis: DiffAnalysis }
+  params: { includeFileExtension: boolean; showEmoji?: boolean; analysis: DiffAnalysis }
 ): string {
   const cleaned = stripCodeFences(raw).trim();
-  const line = pickFirstMeaningfulLine(cleaned);
-  const normalized = normalizeConventionalCommitLine(line, params.includeFileExtension);
-  if (!normalized) return fallbackCommitMessage(params.analysis, params.includeFileExtension);
+  const line = stripLeadingCommitEmoji(pickFirstMeaningfulLine(cleaned));
+  const normalized = normalizeConventionalCommitLine(
+    line,
+    params.includeFileExtension,
+    params.analysis
+  );
+  if (!normalized) {
+    return fallbackCommitMessage(
+      params.analysis,
+      params.includeFileExtension,
+      params.showEmoji ?? false
+    );
+  }
 
   const match = normalized.match(/^(\w+)\(([^)]+)\):\s*(.+)$/);
-  if (!match) return normalized;
+  if (!match) {
+    return normalized;
+  }
 
   const [, type, scope, subject] = match;
   const finalType = type.toLowerCase();
-  const finalScope = normalizeScope(scope, params.includeFileExtension);
-  const finalSubject = subject.trim().replace(/^`+|`+$/g, "");
-  const result = `${finalType}(${finalScope}): ${finalSubject}`;
+  const finalScope = normalizeScope(scope, params.includeFileExtension, params.analysis);
+  const finalSubject = stripLeadingCommitEmoji(subject.trim().replace(/^`+|`+$/g, ""));
 
   if (looksGenericSubject(finalSubject) && params.analysis.primaryIdentifiers.length > 0) {
-    return fallbackCommitMessage(params.analysis, params.includeFileExtension);
+    return fallbackCommitMessage(
+      params.analysis,
+      params.includeFileExtension,
+      params.showEmoji ?? false
+    );
   }
 
-  return result;
+  return formatCommitMessage(finalType, finalScope, finalSubject, params.showEmoji ?? false);
 }
 
-function fallbackCommitMessage(analysis: DiffAnalysis, includeFileExtension: boolean): string {
-  const scope = normalizeScope(analysis.dominantScopeHint ?? "changes", includeFileExtension);
+function fallbackCommitMessage(
+  analysis: DiffAnalysis,
+  includeFileExtension: boolean,
+  showEmoji: boolean
+): string {
+  const scope = normalizeScope(
+    analysis.dominantScopeHint ?? "changes",
+    includeFileExtension,
+    analysis
+  );
   const type = (analysis.typeHint ?? "chore").toLowerCase();
 
   const identifier = analysis.primaryIdentifiers[0];
@@ -235,7 +258,7 @@ function fallbackCommitMessage(analysis: DiffAnalysis, includeFileExtension: boo
   if (fileToken && (!identifier || identifier.toLowerCase() !== fileToken.toLowerCase())) subjectParts.push(fileToken);
   const subjectBase = subjectParts.length > 0 ? `update ${subjectParts.join(" ")}` : "update changes";
 
-  return `${type}(${scope}): ${subjectBase}`;
+  return formatCommitMessage(type, scope, subjectBase, showEmoji);
 }
 
 function pickTypeHint(files: DiffFileSummary[]): string | undefined {
@@ -277,7 +300,11 @@ function pickScopeHint(files: DiffFileSummary[]): string | undefined {
   return basename(files[0].path);
 }
 
-function normalizeConventionalCommitLine(line: string, includeFileExtension: boolean): string | undefined {
+function normalizeConventionalCommitLine(
+  line: string,
+  includeFileExtension: boolean,
+  analysis: DiffAnalysis
+): string | undefined {
   const trimmed = line
     .trim()
     .replace(/^\*\s*/, "")
@@ -292,13 +319,17 @@ function normalizeConventionalCommitLine(line: string, includeFileExtension: boo
 
   let [, type, scope, subject] = match;
   type = type.toLowerCase();
-  scope = normalizeScope(scope, includeFileExtension);
+  scope = normalizeScope(scope, includeFileExtension, analysis);
   subject = subject.trim();
   if (!subject) return undefined;
   return `${type}(${scope}): ${subject}`;
 }
 
-function normalizeScope(scope: string, includeFileExtension: boolean): string {
+function normalizeScope(
+  scope: string,
+  includeFileExtension: boolean,
+  analysis: DiffAnalysis
+): string {
   let s = scope.trim();
   s = s.replace(/^`+|`+$/g, "");
   s = s.replace(/^\/*|\/*$/g, "");
@@ -308,9 +339,64 @@ function normalizeScope(scope: string, includeFileExtension: boolean): string {
   if (!includeFileExtension) {
     const dotIndex = s.lastIndexOf(".");
     if (dotIndex > 0) s = s.slice(0, dotIndex);
+  } else if (!hasFileExtension(s)) {
+    const requestedScope = s.toLowerCase();
+    const matchingFile = analysis.files.find((file) => {
+      const fileName = basename(file.path);
+      return (
+        fileName.toLowerCase() === requestedScope ||
+        removeFileExtension(fileName).toLowerCase() === requestedScope
+      );
+    });
+    const resolvedFile = matchingFile ?? (analysis.files.length === 1 ? analysis.files[0] : undefined);
+    if (resolvedFile) {
+      s = basename(resolvedFile.path);
+    }
   }
 
   return s || "changes";
+}
+
+const COMMIT_EMOJI_BY_TYPE: Readonly<Record<string, string>> = {
+  feat: "\u2728",
+  fix: "\u{1F41B}",
+  docs: "\u{1F4DA}",
+  style: "\u{1F48E}",
+  refactor: "\u{1F528}",
+  perf: "\u{1F680}",
+  test: "\u{1F6A8}",
+  chore: "\u{1F527}",
+  build: "\u{1F3D7}\uFE0F",
+  ci: "\u{1F477}",
+  revert: "\u23EA",
+};
+
+function formatCommitMessage(type: string, scope: string, subject: string, showEmoji: boolean): string {
+  const message = `${type}(${scope}): ${subject}`;
+  if (!showEmoji) {
+    return message;
+  }
+  const emoji = COMMIT_EMOJI_BY_TYPE[type];
+  return emoji ? `${emoji} ${message}` : message;
+}
+
+function stripLeadingCommitEmoji(value: string): string {
+  const trimmed = value.trimStart();
+  for (const emoji of Object.values(COMMIT_EMOJI_BY_TYPE)) {
+    if (trimmed.startsWith(emoji)) {
+      return trimmed.slice(emoji.length).trimStart();
+    }
+  }
+  return trimmed;
+}
+
+function hasFileExtension(value: string): boolean {
+  return value.startsWith(".") || value.lastIndexOf(".") > 0;
+}
+
+function removeFileExtension(value: string): string {
+  const dotIndex = value.lastIndexOf(".");
+  return dotIndex > 0 ? value.slice(0, dotIndex) : value;
 }
 
 function looksGenericSubject(subject: string): boolean {
