@@ -2499,10 +2499,10 @@ open@^10.1.0:
     is-inside-container "^1.0.0"
     wsl-utils "^0.1.0"
 
-openai@^6.19.0:
-  version "6.19.0"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-6.19.0.tgz#37138ac9f1feedd6414f099c46da04f3d54c07ec"
-  integrity sha512-5uGrF82Ql7TKgIWUnuxh+OyzYbPRPwYDSgGc05JowbXRFsOkuj0dJuCdPCTBZT4mcmp2NEvj/URwDzW+lYgmVw==
+openai@^6.22.0:
+  version "6.22.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-6.22.0.tgz#822abd533ba3656741df87e31d1d643520e77463"
+  integrity sha512-7Yvy17F33Bi9RutWbsaYt5hJEEJ/krRPOrwan+f9aCPuMat1WVsb2VNSII5W1EksKT6fF69TG/xj4XzodK3JZw==
 
 optionator@^0.9.3:
   version "0.9.4"
