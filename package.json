@@ -2,7 +2,7 @@
   "name": "pro-commit",
   "displayName": "ProCommit",
   "description": "📝 A Customizable VS Code extension for AI-generated commit messages.",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "homepage": "https://koiiverse.cloud",
   "bugs": "https://github.com/rukamori/ProCommit/issues",
   "repository": {
@@ -13,9 +13,6 @@
   "engines": {
     "vscode": "^1.109.0"
   },
-  "enabledApiProposals": [
-    "contribSourceControlInputBoxMenu"
-  ],
   "publisher": "Kochan",
   "categories": [
     "Other",
@@ -115,10 +112,11 @@
       }
     ],
     "menus": {
-      "scm/inputBox": [
+      "scm/title": [
         {
           "command": "procommit.generateAICommit",
-          "when": "scmProvider == git"
+          "when": "scmProvider == git",
+          "group": "navigation"
         }
       ]
     },

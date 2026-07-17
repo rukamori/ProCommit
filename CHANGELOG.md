@@ -1,5 +1,13 @@
 # CHANGELOG
 
+### 2.2.3 - 2026-07-18
+
+### Fixed
+
+- Fix Icons Accessibility Issue
+
+### 2.2.2 - 2026-07-17
+
 ### What Changed
 
 - Put Icons In Git SCM Bar
