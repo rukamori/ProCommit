@@ -52,6 +52,7 @@ export class ChatgptMsgGenerator implements MsgGenerator {
     }
 
     const includeFileExtension = config.general?.includeFileExtension ?? true;
+    const showEmoji = config.general?.showEmoji ?? false;
     const { userPrompt, analysis } = createDiffAwareUserPrompt(diff);
     const messages = [
       { role: "system", content: instruction },
@@ -92,6 +93,7 @@ export class ChatgptMsgGenerator implements MsgGenerator {
     const commitMessages = (data.choices as any[]).map((choice) =>
       postProcessCommitMessage(choice?.message?.content ?? "", {
         includeFileExtension,
+        showEmoji,
         analysis,
       })
     );
