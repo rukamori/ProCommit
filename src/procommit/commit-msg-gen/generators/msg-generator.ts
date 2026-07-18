@@ -27,6 +27,17 @@ const MAX_IDENTIFIERS_IN_PROMPT = 14;
 const MAX_KEYS_IN_PROMPT = 14;
 const MAX_DEPS_IN_PROMPT = 12;
 const MAX_RAW_DIFF_CHARS = 18000;
+const MAX_COMMIT_LINE_LENGTH = 71;
+const ALLOWED_COMMIT_TYPES = new Set([
+  "feat",
+  "fix",
+  "refactor",
+  "chore",
+  "docs",
+  "style",
+  "test",
+  "perf",
+]);
 
 export function buildOllamaGenerateUrl(endpoint: string): string {
   const base = endpoint.trim().replace(/\/+$/, "");
@@ -150,7 +161,7 @@ export function createDiffAnalysis(diff: string): DiffAnalysis {
     MAX_IDENTIFIERS_IN_PROMPT
   );
 
-  const dominantScopeHint = pickScopeHint(primaryFiles);
+  const dominantScopeHint = pickScopeHint(files);
   const typeHint = pickTypeHint(primaryFiles);
 
   return {
@@ -219,13 +230,24 @@ export function postProcessCommitMessage(
 
   const match = normalized.match(/^(\w+)\(([^)]+)\):\s*(.+)$/);
   if (!match) {
-    return normalized;
+    return fallbackCommitMessage(
+      params.analysis,
+      params.includeFileExtension,
+      params.showEmoji ?? false
+    );
   }
 
   const [, type, scope, subject] = match;
-  const finalType = type.toLowerCase();
+  const normalizedType = type.toLowerCase();
+  const finalType = ALLOWED_COMMIT_TYPES.has(normalizedType)
+    ? normalizedType
+    : normalizeCommitType(params.analysis.typeHint);
   const finalScope = normalizeScope(scope, params.includeFileExtension, params.analysis);
-  const finalSubject = stripLeadingCommitEmoji(subject.trim().replace(/^`+|`+$/g, ""));
+  const finalSubject = normalizeSubject(
+    stripLeadingCommitEmoji(subject.trim().replace(/^`+|`+$/g, "")),
+    finalType,
+    finalScope
+  );
 
   if (looksGenericSubject(finalSubject) && params.analysis.primaryIdentifiers.length > 0) {
     return fallbackCommitMessage(
@@ -248,7 +270,7 @@ function fallbackCommitMessage(
     includeFileExtension,
     analysis
   );
-  const type = (analysis.typeHint ?? "chore").toLowerCase();
+  const type = normalizeCommitType(analysis.typeHint);
 
   const identifier = analysis.primaryIdentifiers[0];
   const fileToken = analysis.files[0]?.path ? basename(analysis.files[0].path) : undefined;
@@ -258,7 +280,12 @@ function fallbackCommitMessage(
   if (fileToken && (!identifier || identifier.toLowerCase() !== fileToken.toLowerCase())) subjectParts.push(fileToken);
   const subjectBase = subjectParts.length > 0 ? `update ${subjectParts.join(" ")}` : "update changes";
 
-  return formatCommitMessage(type, scope, subjectBase, showEmoji);
+  return formatCommitMessage(
+    type,
+    scope,
+    normalizeSubject(subjectBase, type, scope),
+    showEmoji
+  );
 }
 
 function pickTypeHint(files: DiffFileSummary[]): string | undefined {
@@ -267,7 +294,7 @@ function pickTypeHint(files: DiffFileSummary[]): string | undefined {
   if (isDocs) return "docs";
 
   const isCi = paths.some((p) => p.includes(".github/workflows/") || p.includes(".gitlab-ci") || p.endsWith(".circleci/config.yml"));
-  if (isCi) return "ci";
+  if (isCi) return "chore";
 
   const isTest = paths.every((p) => isTestPath(p));
   if (isTest) return "test";
@@ -288,16 +315,23 @@ function pickScopeHint(files: DiffFileSummary[]): string | undefined {
   if (files.length === 0) return undefined;
   if (files.length === 1) return basename(files[0].path);
 
-  const topSegments = new Map<string, number>();
-  for (const f of files) {
-    const seg = f.path.split("/")[0]?.trim();
-    if (!seg) continue;
-    topSegments.set(seg, (topSegments.get(seg) ?? 0) + 1);
+  const parentSegments = files.map((file) => pathSegments(file.path).slice(0, -1));
+  const commonParent = commonPathSegments(parentSegments);
+  if (commonParent.length > 0) {
+    return commonParent[commonParent.length - 1];
   }
 
-  const best = [...topSegments.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
-  if (best && best !== "." && best !== "src") return best;
-  return basename(files[0].path);
+  const folderCounts = new Map<string, number>();
+  for (const segments of parentSegments) {
+    const folder = segments[0];
+    if (!folder) continue;
+    folderCounts.set(folder, (folderCounts.get(folder) ?? 0) + 1);
+  }
+
+  return [...folderCounts.entries()]
+    .sort(([leftFolder, leftCount], [rightFolder, rightCount]) => {
+      return rightCount - leftCount || leftFolder.localeCompare(rightFolder);
+    })[0]?.[0] ?? "changes";
 }
 
 function normalizeConventionalCommitLine(
@@ -318,7 +352,7 @@ function normalizeConventionalCommitLine(
   if (!match) return trimmed.includes(":") ? trimmed.split("\n")[0].trim() : trimmed;
 
   let [, type, scope, subject] = match;
-  type = type.toLowerCase();
+  type = normalizeCommitType(type);
   scope = normalizeScope(scope, includeFileExtension, analysis);
   subject = subject.trim();
   if (!subject) return undefined;
@@ -330,31 +364,43 @@ function normalizeScope(
   includeFileExtension: boolean,
   analysis: DiffAnalysis
 ): string {
-  let s = scope.trim();
+  let s = analysis.dominantScopeHint ?? scope.trim();
   s = s.replace(/^`+|`+$/g, "");
   s = s.replace(/^\/*|\/*$/g, "");
   s = s.split("/").pop() ?? s;
   s = s.split("\\").pop() ?? s;
 
-  if (!includeFileExtension) {
+  if (!includeFileExtension && analysis.files.length === 1) {
     const dotIndex = s.lastIndexOf(".");
     if (dotIndex > 0) s = s.slice(0, dotIndex);
-  } else if (!hasFileExtension(s)) {
-    const requestedScope = s.toLowerCase();
-    const matchingFile = analysis.files.find((file) => {
-      const fileName = basename(file.path);
-      return (
-        fileName.toLowerCase() === requestedScope ||
-        removeFileExtension(fileName).toLowerCase() === requestedScope
-      );
-    });
-    const resolvedFile = matchingFile ?? (analysis.files.length === 1 ? analysis.files[0] : undefined);
-    if (resolvedFile) {
-      s = basename(resolvedFile.path);
-    }
   }
 
   return s || "changes";
+}
+
+function normalizeCommitType(type: string | undefined): string {
+  const normalized = type?.trim().toLowerCase();
+  return normalized && ALLOWED_COMMIT_TYPES.has(normalized) ? normalized : "chore";
+}
+
+function normalizeSubject(subject: string, type: string, scope: string): string {
+  const lowercaseStart = subject.length > 0
+    ? `${subject[0].toLowerCase()}${subject.slice(1)}`
+    : "update changes";
+  const withoutTrailingPeriod = lowercaseStart.trim().replace(/[.]+$/g, "") || "update changes";
+  const maxLength = Math.max(
+    1,
+    MAX_COMMIT_LINE_LENGTH - `${type}(${scope}): `.length
+  );
+
+  if (withoutTrailingPeriod.length <= maxLength) {
+    return withoutTrailingPeriod;
+  }
+
+  const truncated = withoutTrailingPeriod.slice(0, maxLength + 1);
+  const lastSpace = truncated.lastIndexOf(" ");
+  const boundary = lastSpace > 0 ? lastSpace : maxLength;
+  return truncated.slice(0, boundary).trimEnd().replace(/[.,;:]+$/g, "");
 }
 
 const COMMIT_EMOJI_BY_TYPE: Readonly<Record<string, string>> = {
@@ -390,13 +436,21 @@ function stripLeadingCommitEmoji(value: string): string {
   return trimmed;
 }
 
-function hasFileExtension(value: string): boolean {
-  return value.startsWith(".") || value.lastIndexOf(".") > 0;
+function pathSegments(path: string): string[] {
+  return path.split(/[\\/]+/).map((segment) => segment.trim()).filter(Boolean);
 }
 
-function removeFileExtension(value: string): string {
-  const dotIndex = value.lastIndexOf(".");
-  return dotIndex > 0 ? value.slice(0, dotIndex) : value;
+function commonPathSegments(paths: string[][]): string[] {
+  if (paths.length === 0) return [];
+
+  const shortestLength = Math.min(...paths.map((segments) => segments.length));
+  const common: string[] = [];
+  for (let index = 0; index < shortestLength; index += 1) {
+    const candidate = paths[0][index];
+    if (!paths.every((segments) => segments[index] === candidate)) break;
+    common.push(candidate);
+  }
+  return common;
 }
 
 function looksGenericSubject(subject: string): boolean {

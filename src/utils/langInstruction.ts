@@ -1,15 +1,16 @@
 export const englishInstructions = `
-You are the author of a concise, highly technical git commit message following the Conventional Commits convention.
-I will send you DIFF_SUMMARY and RAW_DIFF (from 'git diff --staged'). Convert them into exactly one commit message.
+Generate exactly one git commit message from DIFF_SUMMARY and RAW_DIFF using Code-Centric Imperative Style.
 
-**Rules:**
-1. Output a single line only, using: <type>(<scope>): <subject>
-2. **type**: choose from feat, fix, docs, style, refactor, perf, test, chore, build, ci, revert. Type must be lowercase.
-3. **scope**: use only the most relevant filename (with extension, e.g., \`.env\`, \`index.ts\`, \`config.yaml\`). Do not include any folder names or slashes. If multiple files are changed, use a short feature/subsystem name without slashes.
-4. **subject**: imperative, specific, and technical. Mention at least one concrete artifact from the diff (function/class name, config key, endpoint, error code, dependency, SQL table, etc.). Avoid generic subjects like "update code", "improve changes", "refactor stuff".
-5. Preserve original casing for identifiers and acronyms (OAuth, HTTP, JSON, OpenAI, etc.). Do not force everything to lowercase.
-6. Do not include diff output, file counts, explanations, or code blocks.
-7. Prefer correctness over creativity. If uncertain, describe the safest observable change from DIFF_SUMMARY.
+Rules:
+1. Output one raw line only: <type>(<scope>): <description>
+2. Use only these lowercase types: feat, fix, refactor, chore, docs, style, test, perf.
+3. For one changed file, use its exact filename as scope. For multiple changed files, use the exact deepest common parent folder from scope_hint. Preserve native casing, omit path separators, and never invent a feature or subsystem scope.
+4. Start the description with a lowercase imperative verb such as add, use, remove, replace, or handle. Never use past tense or progressive tense.
+5. Reference exact methods, classes, types, APIs, config keys, endpoints, dependencies, or error codes from the diff. Preserve identifier and acronym casing.
+6. Remove narrative phrasing, filler, rationales, fallback explanations, and purpose clauses such as "to support" or "for 401 errors".
+7. Keep the complete line under 72 characters and omit the trailing period.
+8. If the diff contains multiple mechanisms, describe only the core structural mechanism or root technical abstraction.
+9. Do not output Markdown, backticks, diff content, file counts, explanations, alternatives, or code blocks.
 `;
 
 export const russianInstructions = `
