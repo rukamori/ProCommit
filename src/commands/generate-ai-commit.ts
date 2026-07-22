@@ -110,20 +110,29 @@ export async function generateAiCommitCommand() {
     let messageGenerator;
     const apiKey = configuration.apiKey || "";
     const endpoint = configuration.endpoint || "";
+    const model = configuration.model;
     switch (configuration.general.generator) {
       case "Gemini": {
         const { GeminiMsgGenerator } = await import("@procommit/commit-msg-gen");
-        messageGenerator = new GeminiMsgGenerator({ apiKey, endpoint });
+        messageGenerator = new GeminiMsgGenerator({ apiKey, endpoint, model });
         break;
       }
       case "Ollama": {
         const { OllamaMsgGenerator } = await import("@procommit/commit-msg-gen");
-        messageGenerator = new OllamaMsgGenerator({ apiKey, endpoint });
+        messageGenerator = new OllamaMsgGenerator({
+          apiKey,
+          endpoint,
+          model,
+        });
         break;
       }
       case "LMStudio": {
         const { LMStudioMsgGenerator } = await import("@procommit/commit-msg-gen");
-        messageGenerator = new LMStudioMsgGenerator({ apiKey, endpoint });
+        messageGenerator = new LMStudioMsgGenerator({
+          apiKey,
+          endpoint,
+          model,
+        });
         break;
       }
       case "Smithery": {
@@ -136,7 +145,7 @@ export async function generateAiCommitCommand() {
         messageGenerator = new CustomMsgGenerator({
           apiKey,
           endpoint,
-          model: configuration.model,
+          model,
           temperature: configuration.temperature,
           maxTokens: configuration.maxTokens,
         });
